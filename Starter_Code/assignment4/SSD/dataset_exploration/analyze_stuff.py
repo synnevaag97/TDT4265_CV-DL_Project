@@ -22,16 +22,21 @@ def get_dataloader(cfg, dataset_to_visualize):
 
 
 def analyze_something(dataloader, cfg):
+    i = 0
     for batch in tqdm(dataloader):
         # Remove the two lines below and start analyzing :D
         print("The keys in the batch are:", batch.keys())
+        print("Images: ", len(batch['image']))
         print("Images: ", batch['image'][0])
         print("Boxes: ", batch['boxes'][0])
         print("Labels: ", batch['labels'][0])
         print("Width: ", batch['width'][0])
         print("Height: ", batch['height'][0])
         print("Image_id: ", batch['image_id'][0])
-        exit()
+        
+        i+=1
+        if i >5:
+            exit()
 
 
 def main():
