@@ -89,7 +89,7 @@ def main():
     config_path = "configs/tdt4265.py"
     cfg = get_config(config_path)
     dataset_to_visualize = "train"  # or "val"
-    num_images_to_visualize = 500  # Increase this if you want to save more images
+    num_images_to_visualize = 1000  # Increase this if you want to save more images
 
     dataloader = get_dataloader(cfg, dataset_to_visualize)
     save_folder = os.path.join("dataset_exploration", "annotation_images")
