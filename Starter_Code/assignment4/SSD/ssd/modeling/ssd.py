@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 from .anchor_encoder import AnchorEncoder
 from torchvision.ops import batched_nms
+from sys import exit
+from math import log
 
 
 class SSD300(nn.Module):
@@ -19,24 +21,75 @@ class SSD300(nn.Module):
         self.feature_extractor = feature_extractor
         self.loss_func = loss_objective
         self.num_classes = num_classes
+        self.n_boxes = 6
         self.regression_heads = []
         self.classification_heads = []
 
         # Initialize output heads that are applied to each feature map from the backbone.
+        #print(anchors.num_boxes_per_fmap)
+        C = 256
+        out_ch = 256
+        
+        self.class_layer = nn.Sequential(
+                    nn.Conv2d(in_channels=out_ch,out_channels=C,kernel_size=3,padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=C,out_channels=C,kernel_size=3,padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=C,out_channels=C,kernel_size=3,padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=C,out_channels=C,kernel_size=3,padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=C,out_channels=self.n_boxes * self.num_classes,kernel_size=3,padding=1), #last layer   
+            )
+        self.regr_layer = nn.Sequential(
+                    nn.Conv2d(in_channels=out_ch,out_channels=C,kernel_size=3,padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=C,out_channels=C,kernel_size=3,padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=C,out_channels=C,kernel_size=3,padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=C,out_channels=C,kernel_size=3,padding=1),
+                    nn.ReLU(),
+                    nn.Conv2d(in_channels=C,out_channels=self.n_boxes * 4,kernel_size=3,padding=1), #last layer   
+            )
+        """
         for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
             self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
             self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
-
+        """ 
+        for i in range(len(self.feature_extractor.out_channels)):
+            self.regression_heads.append(self.regr_layer)
+            self.classification_heads.append(self.class_layer)
+        
         self.regression_heads = nn.ModuleList(self.regression_heads)
         self.classification_heads = nn.ModuleList(self.classification_heads)
         self.anchor_encoder = AnchorEncoder(anchors)
         self._init_weights()
 
     def _init_weights(self):
-        layers = [*self.regression_heads, *self.classification_heads]
-        for layer in layers:
+        layer_reg = [*self.regression_heads]
+        layer_class = [*self.classification_heads]
+        # Init regression head layers
+        for layer in layer_reg:
             for param in layer.parameters():
                 if param.dim() > 1: nn.init.xavier_uniform_(param)
+                #if param.dim() > 1: nn.init.normal_(param, 0, 0.01)
+                #elif param.dim() == 1:
+                    #nn.init.constant_(param.data, 0)
+        # Init classification head layers  
+        p = 0.99
+        b = log(p*(self.num_classes-1)/(1-p))
+
+        for layer in layer_class:
+            #print(layer)
+            for param in layer.parameters():
+                if param.dim() > 1: nn.init.xavier_uniform_(param)
+                #if param.dim() > 1: nn.init.normal_(param, 0., 0.01)
+                #elif param.dim() == 1:
+                    #nn.init.constant_(param.data, 0.)
+            nn.init.constant_(layer[8].bias.data, 0.)
+            nn.init.constant_(layer[8].bias.data[0:self.n_boxes], b)
+            #print("bias",layer[8].bias)
 
     def regress_boxes(self, features):
         locations = []
@@ -46,8 +99,10 @@ class SSD300(nn.Module):
             bbox_conf = self.classification_heads[idx](x).view(x.shape[0], self.num_classes, -1)
             locations.append(bbox_delta)
             confidences.append(bbox_conf)
+             
         bbox_delta = torch.cat(locations, 2).contiguous()
         confidences = torch.cat(confidences, 2).contiguous()
+        
         return bbox_delta, confidences
 
     
@@ -89,7 +144,7 @@ def filter_predictions(
         nms_iou_threshold: float, max_output: int, score_threshold: float):
         """
             boxes_ltrb: shape [N, 4]
-            confs: shape [N, num_classes]
+                confs: shape [N, num_classes]
         """
         assert 0 <= nms_iou_threshold <= 1
         assert max_output > 0
