@@ -19,6 +19,7 @@ def get_config(config_path):
 def get_dataloader(cfg, dataset_to_visualize):
     if dataset_to_visualize == "train":
         # Remove GroundTruthBoxesToAnchors transform
+        print(cfg.data_train.dataset.transform.transforms)
         cfg.data_train.dataset.transform.transforms = cfg.data_train.dataset.transform.transforms[:-1]
         data_loader = instantiate(cfg.data_train.dataloader)
     else:

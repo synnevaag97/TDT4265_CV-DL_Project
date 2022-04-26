@@ -21,7 +21,7 @@ class SSD300(nn.Module):
         self.feature_extractor = feature_extractor
         self.loss_func = loss_objective
         self.num_classes = num_classes
-        self.n_boxes = 6
+        self.n_boxes = 6 #6 before task 2.4
         self.regression_heads = []
         self.classification_heads = []
 
@@ -70,26 +70,23 @@ class SSD300(nn.Module):
         layer_reg = [*self.regression_heads]
         layer_class = [*self.classification_heads]
         # Init regression head layers
-        for layer in layer_reg:
-            for param in layer.parameters():
-                if param.dim() > 1: nn.init.xavier_uniform_(param)
-                #if param.dim() > 1: nn.init.normal_(param, 0, 0.01)
-                #elif param.dim() == 1:
-                    #nn.init.constant_(param.data, 0)
+        
+        for param in self.regr_layer.parameters():
+            if param.dim() > 1: nn.init.kaiming_normal_(param) #nn.init.xavier_uniform_(param)
+            #if param.dim() > 1: nn.init.normal_(param, 0, 0.01)
+            #elif param.dim() == 1:
+                #nn.init.constant_(param.data, 0)
         # Init classification head layers  
         p = 0.99
         b = log(p*(self.num_classes-1)/(1-p))
-
-        for layer in layer_class:
-            #print(layer)
-            for param in layer.parameters():
-                if param.dim() > 1: nn.init.xavier_uniform_(param)
+        
+        for param in self.class_layer.parameters():
+            if param.dim() > 1: nn.init.kaiming_normal_(param) #nn.init.xavier_uniform_(param)
                 #if param.dim() > 1: nn.init.normal_(param, 0., 0.01)
                 #elif param.dim() == 1:
                     #nn.init.constant_(param.data, 0.)
-            nn.init.constant_(layer[8].bias.data, 0.)
-            nn.init.constant_(layer[8].bias.data[0:self.n_boxes], b)
-            #print("bias",layer[8].bias)
+        nn.init.constant_(self.class_layer[8].bias.data, 0.)
+        nn.init.constant_(self.class_layer[8].bias.data[0:self.n_boxes], b)
 
     def regress_boxes(self, features):
         locations = []

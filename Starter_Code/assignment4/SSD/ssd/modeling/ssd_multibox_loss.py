@@ -42,10 +42,6 @@ def softmax_focal_loss(outputs, targets, alpha, gamma=2.):
     
     log_soft = torch.permute(F.log_softmax(outputs, dim=1),(0, 2, 1))
     soft = torch.permute(F.softmax(outputs, dim=1),(0, 2, 1))
-    #torch.set_printoptions(profile="full")
-    #print(soft[0,0:160,:])
-    #print(targets[0,0:160,:])
-    #exit("Shiiiish")
     assert targets.shape == log_soft.shape,\
         f"Targets shape: {targets.shape}, outputs: {log_soft.shape}"
 
