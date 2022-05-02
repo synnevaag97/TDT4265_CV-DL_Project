@@ -86,7 +86,7 @@ def analyze_something(dataloader, cfg):
         number += 1
         if number == 5:
             break    # break here
-
+        
         widths = (batch['boxes'][0][:,2].numpy()-batch['boxes'][0][:,0].numpy())*batch['width'].numpy()
         heights = (batch['boxes'][0][:,3].numpy()-batch['boxes'][0][:,1].numpy())*batch['height'].numpy()
         x = np.append(x,batch['boxes'][0][:,0].numpy()*batch['width'].numpy())
@@ -185,13 +185,31 @@ def analyze_something(dataloader, cfg):
     classes = ['car','truck','bus','bicycle','scooter','person','rider']
     s = [5 for n in range(len(list_val[:,0]))]
     scatter = plt.scatter(list_val[:,0],list_val[:,1],s = s, cmap = 'Set1', c=list_val[:,4])
+    plt.ylim([0, 7])
     plt.legend(handles=scatter.legend_elements()[0], labels=classes, loc='best')
     fig.savefig('dataset_exploration/Histograms/plot.png', dpi = 150)
     
     plt.close('all')
     
-    print("The number of object with ratio smaller than 4 is: ", np.count_nonzero(list_val[:,1]<4))
-    print("The number of object with ratio bigger than 4 is: ", np.count_nonzero(list_val[:,1]>=4))
+    fig = plt.figure() 
+    classes = ['car','truck','bus','bicycle','scooter','person','rider']
+    s = [5 for n in range(len(list_val[:,0]))]
+    scatter = plt.scatter(list_val[:,2],list_val[:,3],s = s, cmap = 'Set1', c=list_val[:,4])
+    #plt.ylim([0, 7])
+    plt.legend(handles=scatter.legend_elements()[0], labels=classes, loc='best')
+    fig.savefig('dataset_exploration/Histograms/plot_height_width.png', dpi = 150)
+    
+    plt.close('all')
+    
+    print((list_val[:,1]<2))
+    print(np.bitwise_and(list_val[:,1]<2, list_val[:,0]<10))
+    print("The number of object with ratio smaller than 2 is: ", np.count_nonzero(np.bitwise_and(list_val[:,1]<2, list_val[:,0]<20, list_val[:,0]>10)))
+    print("The number of object with ratio bigger than 2 is: ", np.count_nonzero(np.bitwise_and(list_val[:,1]>=2, list_val[:,0]<20, list_val[:,0]>10)))
+    print("The number of object with ratio smaller than 3 is: ", np.count_nonzero(np.bitwise_and(list_val[:,1]<3, list_val[:,0]<20, list_val[:,0]>10)))
+    print("The number of object with ratio bigger than 3 is: ", np.count_nonzero(np.bitwise_and(list_val[:,1]>=3, list_val[:,0]<20, list_val[:,0]>10)))
+    print("The number of object with ratio smaller than 4 is: ", np.count_nonzero(np.bitwise_and(list_val[:,1]<4, list_val[:,0]<20, list_val[:,0]>10)))
+    print("The number of object with ratio bigger than 4 is: ", np.count_nonzero(np.bitwise_and(list_val[:,1]>=4, list_val[:,0]<20, list_val[:,0]>10)))
+    print("The mean ratio is: ", np.mean(list_val[list_val[:,0]<10,1]))
     print("The smallest object has size: ", list_val[1:50,0])
     print("The biggest objects has size: ", list_val[len(list_val)-50:len(list_val),0])
 def main():

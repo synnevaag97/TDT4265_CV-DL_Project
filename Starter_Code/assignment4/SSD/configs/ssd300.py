@@ -24,14 +24,15 @@ anchors = L(AnchorBoxes)(
     feature_sizes=[[32, 256], [16, 128], [8, 64], [4, 32], [2, 16], [1, 8]], # Project
     # Strides is the number of pixels (in image space) between each spatial position in the feature map
     strides=[[4, 4], [8, 8], [16, 16], [32, 32], [64, 64], [128, 128]], #Project
-    min_sizes=[[16, 16], [32, 32], [48, 48], [64, 64], [86, 86], [128, 128], [128, 400]], # Project
+    #min_sizes=[[16, 16], [32, 32], [48, 48], [64, 64], [86, 86], [128, 128], [128, 400]], # Project
     # Updated min sizes for task 2.4
-    #min_sizes=[[5, 5], [15, 15], [30, 30], [50, 50], [75, 75], [128, 128], [128, 400]], # Project
+    min_sizes=[[10, 10], [20, 20], [36, 36], [58, 58], [86, 86], [128, 128], [128, 500]], # Project
     # aspect ratio is defined per feature map (first index is largest feature map (38x38))
     # aspect ratio is used to define two boxes per element in the list.
     # if ratio=[2], boxes will be created with ratio 1:2 and 2:1
     # Number of boxes per location is in total 2 + 2 per aspect ratio
-    aspect_ratios=[[2,3], [2, 3], [2, 3], [2, 3], [2,3], [2,3]], # Project
+    #aspect_ratios=[[2,3], [2, 3], [2, 3], [2, 3], [2,3], [2,3]], # Project
+    aspect_ratios=[[2, 4], [2, 4], [2, 3], [2, 3], [2,3], [2,3]], # Modified
     # Updated ratios for task 2.4
     #aspect_ratios=[[2,3,4], [2, 3,4], [2, 3,4], [2, 3,4], [2,3,4], [2,3,4]], # Project
     image_shape="${train.imshape}",
