@@ -40,11 +40,13 @@ anchors = L(AnchorBoxes)(
     scale_size_variance=0.2
 )
 
-backbone = L(backbones.FPN)(
+backbone = L(backbones.Res_BiFPN)(
     # Without FPN
     #output_channels=[256, 512, 1024, 2048, 2048, 2048],
     #With FPN
-    output_channels=[256, 256, 256, 256, 256, 256],
+    #output_channels=[256, 256, 256, 256, 256, 256],
+     #With BiFPN
+    output_channels=[200, 200, 200, 200, 200, 200],
     image_channels="${train.image_channels}",
     output_feature_sizes="${anchors.feature_sizes}"
 )

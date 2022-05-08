@@ -27,8 +27,8 @@ class SSD300(nn.Module):
 
         # Initialize output heads that are applied to each feature map from the backbone.
         #print(anchors.num_boxes_per_fmap)
-        C = 256
-        out_ch = 256
+        C = 200
+        out_ch = 200
         
         self.class_layer = nn.Sequential(
                     nn.Conv2d(in_channels=out_ch,out_channels=C,kernel_size=3,padding=1),
